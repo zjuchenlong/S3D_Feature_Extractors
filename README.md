@@ -1,0 +1,1 @@
+``s3d_vid_feat_extractor.py`` extract HowTo100M-like S3D features, some hyperparamters may slightly influence the results.

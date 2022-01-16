@@ -1,0 +1,6 @@
+[submodule "video_feature_extractor"]
+	path = video_feature_extractor
+	url = https://github.com/antoine77340/video_feature_extractor
+[submodule "S3D_HowTo100M"]
+	path = S3D_HowTo100M
+	url = https://github.com/antoine77340/S3D_HowTo100M
