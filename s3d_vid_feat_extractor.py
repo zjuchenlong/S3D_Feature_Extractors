@@ -19,6 +19,7 @@ from torch.utils.data import Dataset
 import pandas as pd
 import os
 import ffmpeg
+import subprocess
 
 
 class VideoLoader(Dataset):
@@ -47,7 +48,22 @@ class VideoLoader(Dataset):
     def __len__(self):
         return len(self.csv)
 
+    def _get_duration(self, video_path):
+        """
+        https://stackoverflow.com/questions/31024968/using-ffmpeg-to-obtain-video-durations-in-python
+        Get the duration of a video using ffprobe.
+        """
+        cmd = 'ffprobe -i {} -show_entries format=duration -v quiet -of csv="p=0"'.format(video_path)
+        output = subprocess.check_output(
+            cmd,
+            shell=True, # Let this run in the shell
+            stderr=subprocess.STDOUT
+        )
+        # return round(float(output))  # ugly, but rounds your seconds up or down
+        return float(output)
+
     def _get_video_dim(self, video_path):
+        """ fail on wbem format, it works for height & width """
         probe = ffmpeg.probe(video_path)
         video_stream = next((stream for stream in probe['streams']
                              if stream['codec_type'] == 'video'), None)
@@ -101,7 +117,7 @@ class VideoLoader(Dataset):
         if not(os.path.isfile(output_file)) and os.path.isfile(video_path):
             print('Decoding video: {}'.format(video_path))
             try:
-                duration = self._get_video_dim(video_path)
+                duration = self._get_duration(video_path)
             except:
                 print('ffprobe failed at: {}'.format(video_path))
                 return {'video': th.zeros(1), 'input': video_path,
