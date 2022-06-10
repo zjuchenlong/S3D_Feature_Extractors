@@ -143,6 +143,7 @@ def parse_args():
     parser.add_argument('--half_precision', type=int, default=1, help='output half precision float')
     parser.add_argument('--num_decoding_thread', type=int, default=4, help='Num parallel thread for video decoding')
     parser.add_argument('--l2_normalize', type=int, default=1, help='l2 normalize feature')
+    parser.add_argument('--feature_type', type=str, default='mixed_5c', help='mixed_5c | video_embedding')
     args = parser.parse_args()
 
     return args
@@ -151,6 +152,7 @@ def parse_args():
 if __name__ == '__main__':
 
     args = parse_args()
+    feature_type = args.feature_type
 
     dataset = VideoLoader(
         args.csv,
@@ -190,13 +192,20 @@ if __name__ == '__main__':
                     # video = preprocess(video)
                 video = video / 255.0
                 n_chunk = len(video)
-                features = th.cuda.FloatTensor(n_chunk, 1024).fill_(0)
+
+                if feature_type == 'mixed_5c':
+                    features = th.cuda.FloatTensor(n_chunk, 1024).fill_(0)
+                elif feature_type == 'video_embedding':
+                    features = th.cuda.FloatTensor(n_chunk, 512).fill_(0)
+                else:
+                    raise ValueError
+
                 n_iter = int(math.ceil(n_chunk / float(args.batch_size)))
                 for i in range(n_iter):                    
                     min_ind = i * args.batch_size
                     max_ind = (i + 1) * args.batch_size
                     video_batch = video[min_ind:max_ind].cuda()
-                    batch_features = model(video_batch)['mixed_5c']
+                    batch_features = model(video_batch)[feature_type]
                     # if args.l2_normalize:
                     #     batch_features = F.normalize(batch_features, dim=1)
                     features[min_ind:max_ind] = batch_features
