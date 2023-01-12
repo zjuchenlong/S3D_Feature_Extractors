@@ -53,7 +53,7 @@ class VideoLoader(Dataset):
         https://stackoverflow.com/questions/31024968/using-ffmpeg-to-obtain-video-durations-in-python
         Get the duration of a video using ffprobe.
         """
-        cmd = 'ffprobe -i {} -show_entries format=duration -v quiet -of csv="p=0"'.format(video_path)
+        cmd = 'ffprobe -i "{}" -show_entries format=duration -v quiet -of csv="p=0"'.format(video_path)
         output = subprocess.check_output(
             cmd,
             shell=True, # Let this run in the shell
